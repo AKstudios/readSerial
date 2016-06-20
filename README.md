@@ -2,7 +2,7 @@
 
 This is a Python script that reads all incoming data on the serial port on Raspberry Pi and writes to an SQLite database. The SQLite table is created if it doesn’t exist.
 
-This script is created to read data from a Moteino that’s connected to the Raspberry Pi via USB. The Moteino receives data from other Moteinos, each identified by their node IDs. All incoming data is expected to be in the following format:
+This script is created to read data from a Moteino that’s connected to the Raspberry Pi via USB. The Moteino receives data from other Moteinos, each identified by their node IDs. All incoming data is expected to be terminated by line break (\n or println in Arduino) and in the following format:
 
 <i>i:1,t:25.44,h:40.23,l:34.00</i> (example)
 
