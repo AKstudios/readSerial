@@ -6,6 +6,6 @@ This script is created to read data from a Moteino that’s connected to the Ras
 
 <i>i:1,t:25.44,h:40.23,l:34.00</i> (example)
 
-The letters indicate sensor type, and the numbers indicate sensor value. The script splits each data set by commas and makes a dictionary of each value splitting by colons. The actual sensor type or value or number of sensor types is not relevant, as the script splits any incoming data, as long as it is formatted correctly.
+The letters indicate sensor type, and the numbers indicate sensor value. In the above example, i is node ID, t is temperature, h is relative humidity and l is light intensity. The script splits each data set by commas and makes a dictionary of the data split by colons. The actual sensor type, sensor value or number of sensor types is not relevant, as the script splits any incoming data, as long as it is formatted correctly.
 
 The SQLite database is overwritten each time new data comes in from the same node. The Node ID and the sensor type are set as primary keys in the database. This database is meant to act as a temporary place for all incoming data which can then be requested by any backend service.
