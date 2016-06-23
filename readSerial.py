@@ -38,9 +38,9 @@ def read_serial():
     serialport.flushInput() #clear input serial buffer
     serialport.flushOutput() #clear output serial buffer
     while True: # keep reading serial port and write to file till the end of time
-        data = serialport.readline() #expecting this format -> "i:1,t:25.44,h:40.23,l:34.00"
+        data = serialport.readline() #expecting this format -> "i:1,t:25.44,h:40.23,l:34.00\n"
         #print data
-        if data: # check if data is not empty
+        if data[0]=='i': # check if data is not empty and entire string is being sent (first value is always "i", which is node ID)
             final_data = parse(data)
             write_db(final_data)
 
@@ -50,7 +50,8 @@ def parse(data):
     final_data = {}
     for p in data.strip().split(","):
         k,v = p.split(":")
-        final_data[k] = v
+        final_data[k] = v if v else 0.00
+
     return final_data
 
 #Write data to SQLiteDB
@@ -60,6 +61,7 @@ def write_db(final_data): # one row per node, per sensor value, overwrite existi
 
     ts = int(time.time()) #get epoch time in seconds
     id = final_data.pop("i") #get sensor id
+
     #st = sensor type, sv = sensor value
     for k,v in final_data.iteritems():
         st = "INSERT OR REPLACE INTO {tn} VALUES ({id},'{st}', {sv}, {ts})".format(id=id, tn=tn, st=k, sv=v, ts=ts)
