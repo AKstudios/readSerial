@@ -10,6 +10,7 @@ import requests
 import dictionary
 import os
 import time
+<<<<<<< HEAD
 import logging
 
 # Configure logging
@@ -28,11 +29,25 @@ try:
     logging.info("Serial port open successfully")
 except:
     logging.warning("Serial port open FAILED")
+=======
+
+
+# Define sensor id and flag as global variables
+id = 0
+flag = True
+
+# Select USB0 if radio is connected to first USB port on Pi
+serialport = serial.Serial("/dev/ttyUSB0", 115200) # make sure baud rate is the same
+>>>>>>> origin/master
 
 # Set location of sqlite db & table name
 db = '/home/pi/serial_db.sqlite'
 tn = 'SERIAL_DB'
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 # Create SQLLite Database, may already exist, handle exception
 def create_db():
     #tn = 'SERIAL_DB'    #table name
@@ -75,8 +90,12 @@ def read_serial():
             write_db(final_data)    # write data to SQLite db
             restAPI(final_data) # push data to HA via rest API
             checkFlag(final_data) # check if flag is False, then edit YAML files & restart HA
+<<<<<<< HEAD
         else:
             logging.warning("Incomplete data packet received")
+=======
+            print("\nWaiting for serial data ...")
+>>>>>>> origin/master
 
 # Parse data string
 def parse(data):
@@ -84,9 +103,14 @@ def parse(data):
     for p in data.strip().split(","): #strip() removes trailing \n
         k,v = p.split(":")
         final_data[k] = v if v else 0.00
+<<<<<<< HEAD
     logging.debug("Data parsed into dictionary")
     #print ("Final Data:")
     #print (final_data)
+=======
+    print ("Final Data:")
+    print (final_data)
+>>>>>>> origin/master
     return final_data
 
 
@@ -100,12 +124,17 @@ def write_db(final_data): # one row per node, per sensor value, overwrite existi
 
     ts = int(time.time()) #get epoch time in seconds
     id = final_data.pop("i") #get sensor id
+<<<<<<< HEAD
     #id = 172
+=======
+    #id = 156
+>>>>>>> origin/master
     #st = sensor type, sv = sensor value
     logging.debug("Looking for data in SQLite DB")
     for k,v in final_data.iteritems():
         # check if data exists by checking node ID and sensor type
         a = "SELECT * FROM {tn} WHERE {nodeid} = '{id}' AND {stype}='{st}'".format(sv='sensor_value', stype='sensor_type', st=k, tn=tn, nodeid='node_id', id=id)
+<<<<<<< HEAD
         #print(a)
         logging.debug(a)
         try:
@@ -125,6 +154,17 @@ def write_db(final_data): # one row per node, per sensor value, overwrite existi
             c.execute(st)
         except:
             logging.error("SQL command Error")
+=======
+        print(a)
+        c.execute(a)
+        data = c.fetchone() #returns one matching row; fetchall() returns all matching rows
+        if not data:
+            flag = False
+
+        st = "INSERT OR REPLACE INTO {tn} VALUES ({id},'{st}', {sv}, {ts})".format(id=id, tn=tn, st=k, sv=v, ts=ts)
+        print st
+        c.execute(st)
+>>>>>>> origin/master
 
     conn.commit()   #commit changes to db
     conn.close() #close connection to SQL file after writing to it
@@ -132,6 +172,7 @@ def write_db(final_data): # one row per node, per sensor value, overwrite existi
 
 # Publish data to HA via restAPI
 def restAPI(final_data):
+<<<<<<< HEAD
     global id # use global id instead of local
     for k,v in final_data.iteritems():
         if k == '#': continue # skip group name
@@ -146,6 +187,18 @@ def restAPI(final_data):
                 'content-type': 'application/json'}
 
         data  = '{"state" : "%s", "attributes": {"friendly_name": "%s", "unit_of_measurement": "%s", "icon": "%s"}}' % (v, sn, su, si)
+=======
+    for k,v in final_data.iteritems():
+        #id = final_data.pop("i") #get sensor id
+        st = dictionary.sensorType[k]
+        su = dictionary.sensorUnit[k]
+
+        url = 'http://192.168.1.212:8123/api/states/sensor.%s_%s' % (st, id)
+        headers = {'x-ha-access': 'Abudabu1!',
+                'content-type': 'application/json'}
+
+        data  = '{"state" : "%s", "attributes": {"friendly_name": "%s", "unit_of_measurement": "%s"}}' % (v, st, su)
+>>>>>>> origin/master
 
         req = requests.Request('POST', url, headers=headers, data=data)
         prepared = req.prepare()
@@ -153,11 +206,17 @@ def restAPI(final_data):
 
         #response = requests.post(url, headers=headers, data=data)
         #print(response.text)
+<<<<<<< HEAD
         logging.debug("Sending data via REST API")
         #print("\nSending data via REST API\n")
         s = requests.Session()
         response = s.send(prepared)
         logging.debug(response)
+=======
+        print("\nSending data via REST API\n")
+        s = requests.Session()
+        s.send(prepared)
+>>>>>>> origin/master
 
 
 # Print POST request in a pretty way
@@ -170,6 +229,7 @@ def pretty_print_POST(req):
     ))
 
 
+<<<<<<< HEAD
 # Rewrite sensors YAML file with new info
 def edit_sensors_YAML(final_data):
     global id # use global id instead of local
@@ -188,11 +248,24 @@ def edit_sensors_YAML(final_data):
         st = dictionary.sensorType[k]
         su = dictionary.sensorUnit[k]
         YAMLstring = "- platform: command_line\n  name: %s_%s\n  command: \"python /home/pi/readDb.py %s %s\"\n  unit_of_measurement: '%s'\n" % (st, id, k, id, su)
+=======
+# Rewrite custom sensors YAML file with new info
+def edit_customsensors_YAML(final_data):
+    target = open('/home/pi/.homeassistant/custom_sensors.yaml', 'w') #open file in write mode
+    target.truncate() # clear file
+    target.write("#Custom sensors\n")
+
+    for k,v in final_data.iteritems():
+        st = dictionary.sensorType[k]
+        su = dictionary.sensorUnit[k]
+        YAMLstring = "- platform: customsensor\n  name: %s %s\n  unit_of_measurement: '%s'\n" % (st, id, su)
+>>>>>>> origin/master
         target.write(YAMLstring)
 
     target.write("\n")
     target.close() # important - close file
 
+<<<<<<< HEAD
     logging.debug("%s edited" % (filename,))
     #print("Adding new sensor to HA")
     #print("sensors.yaml edited")
@@ -214,11 +287,26 @@ def edit_groups_YAML(final_data):
 
     for k,v in final_data.iteritems():
         if k == '#': continue # skip group name
+=======
+    print("Adding new sensor to HA")
+    print("custom_sensors.yaml edited")
+
+
+# Rewrite custom groups YAML file with new info
+def edit_customgroups_YAML(final_data):
+    target = open('/home/pi/.homeassistant/custom_groups.yaml', 'w') #open file in write mode
+    target.truncate() # clear file
+    target.write("#Custom groups\n")
+    target.write("Group {id}:\n  entities:\n".format(id=id))
+
+    for k,v in final_data.iteritems():
+>>>>>>> origin/master
         st = dictionary.sensorType[k]
         su = dictionary.sensorUnit[k]
         YAMLstring = "    - sensor.%s_%s\n" % (st, id)
         target.write(YAMLstring)
 
+<<<<<<< HEAD
     gn = final_data.get('#', "Group {id}".format(id=id))    # get group name if exists
 
     target.write("    - script.export_{id}\n".format(id=id))
@@ -247,6 +335,24 @@ def edit_customize_YAML(final_data):
 
     for k,v in final_data.iteritems():
         if k == '#': continue # skip group name
+=======
+    target.write("  name: Group {id}\n".format(id=id))
+
+    target.write("\n")
+    target.close() # important - close file
+
+    print("Adding new groups to HA")
+    print("custom_groups.yaml edited")
+
+
+# Rewrite custom customize YAML file with new info
+def edit_customcustomize_YAML(final_data):
+    target = open('/home/pi/.homeassistant/custom_customize.yaml', 'w') #open file in write mode
+    target.truncate() # clear file
+    target.write("#Customize custom nodes\n")
+
+    for k,v in final_data.iteritems():
+>>>>>>> origin/master
         st = dictionary.sensorType[k]
         su = dictionary.sensorUnit[k]
         si = dictionary.sensorIcon[k]
@@ -254,6 +360,7 @@ def edit_customize_YAML(final_data):
         YAMLstring = "sensor.%s_%s:\n  friendly_name: %s\n  icon: %s\n" % (st, id, sn, si)
         target.write(YAMLstring)
 
+<<<<<<< HEAD
     target.write("script.export_{id}:\n  icon: mdi:export\n".format(id=id))
     target.write("\n")
     target.close() # important - close file
@@ -337,12 +444,20 @@ def create_SQL_dict():
     logging.debug("Dictionary of lists created")
     conn.commit()   #commit changes to db
     conn.close()    #close connection
+=======
+    target.write("\n")
+    target.close() # important - close file
+
+    print("Adding new groups to HA")
+    print("custom_customize.yaml edited")
+>>>>>>> origin/master
 
 
 # Check if flag is false, then edit YAML files & restart HA
 def checkFlag(final_data):
     global flag
     if not flag:
+<<<<<<< HEAD
         logging.debug("New node detected")
         #print("New node detected")
         create_SQL_dict()
@@ -365,6 +480,21 @@ def checkFlag(final_data):
 
         os.system('sudo reboot')  # restart Pi
 
+=======
+        print("New node detected")
+        edit_customsensors_YAML(final_data)
+        edit_customgroups_YAML(final_data)
+        edit_customcustomize_YAML(final_data)
+        flag = True  # set flag as true
+        print("Restarting Home Assistant ...")
+        os.system('sudo systemctl restart home-assistant@pi') # very important - restart home assistant after editing config files
+        for i in range(10,0,-1):
+            time.sleep(1)
+            sys.stdout.write(str(i)+' ')
+            sys.stdout.flush()
+        #time.sleep(15) # delay for 15 seconds till HA is properly restarted
+
+>>>>>>> origin/master
 
 #run
 create_db()
