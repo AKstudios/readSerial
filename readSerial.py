@@ -20,7 +20,7 @@ logger.setLevel(logging.DEBUG)
 handler = logging.handlers.SysLogHandler(address = '/dev/log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-syslog.setFormatter(formatter)
+handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 logger.debug("Starting script..")
