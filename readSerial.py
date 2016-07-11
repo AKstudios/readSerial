@@ -146,6 +146,7 @@ def write_db(final_data): # one row per node, per sensor value, overwrite existi
 # Publish data to HA via restAPI
 def restAPI(final_data):
     global id # use global id instead of local
+    logger.debug("Building REST request")
     for k,v in final_data.iteritems():
         if k == '#': continue # skip group name
         #id = final_data.pop("i") #get sensor id
@@ -154,23 +155,26 @@ def restAPI(final_data):
         si = dictionary.sensorIcon[k]
         sn = dictionary.sensorName[k]
 
+
         url = 'http://127.0.0.1:8123/api/states/sensor.%s_%s' % (st, id)
         headers = {'x-ha-access': 'Abudabu1!',
                 'content-type': 'application/json'}
 
         data  = '{"state" : "%s", "attributes": {"friendly_name": "%s", "unit_of_measurement": "%s", "icon": "%s"}}' % (v, sn, su, si)
-
-        req = requests.Request('POST', url, headers=headers, data=data)
-        prepared = req.prepare()
-        pretty_print_POST(prepared)
-
-        #response = requests.post(url, headers=headers, data=data)
-        #print(response.text)
+        logger.debug(data)
+        #req = requests.Request('POST', url, headers=headers, data=data)
+        #prepared = req.prepare()
+        #pretty_print_POST(prepared)
         logger.debug("Sending data via REST API")
+        try:
+            response = requests.post(url, headers=headers, data=data)
+            logger.debug(response)
+        except Exception as e:
+            logger.exception(e)
+        #print(response.text)
         #print("\nSending data via REST API\n")
-        s = requests.Session()
-        response = s.send(prepared)
-        logger.debug(response)
+        #s = requests.Session()
+        #response = s.send(prepared)
 
 
 # Print POST request in a pretty way
