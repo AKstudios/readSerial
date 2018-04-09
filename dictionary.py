@@ -24,7 +24,7 @@ sensorType = {'a':'air_temperature',
             'w':'',
             'x':'',
             'y':'',
-            'z':'',
+            'z':'analog_voltage',
             '#':'name',
             }
 
@@ -112,5 +112,6 @@ sensorName = {'a':'Air Stream Temperature',
             'w':'',
             'x':'',
             'y':'',
-            'z':'',
+            'z':'Analog Voltage',
+            '#':'Name',
             }
