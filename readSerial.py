@@ -157,7 +157,7 @@ def restAPI(final_data):
 
 
         url = 'http://127.0.0.1:8123/api/states/sensor.%s_%s' % (st, id)
-        headers = {'x-ha-access': 'Abudabu1!',
+        headers = {'x-ha-access': 'password',
                 'content-type': 'application/json'}
 
         data  = '{"state" : "%s", "attributes": {"friendly_name": "%s", "unit_of_measurement": "%s", "icon": "%s"}}' % (v, sn, su, si)
